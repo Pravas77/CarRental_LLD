@@ -1,22 +1,23 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.StampedLock;
 
 public class Vehicle {
 
     private String vehicleNumber;
     private VehicleType vehicleType;
-    private List<Pair> reservations = new ArrayList<>();
-    private StampedLock lock = new StampedLock();
+    private Store store;
+    private List<Reservation> reservations;
+    private StampedLock lock;
 
-    public StampedLock getLock() {
-        return lock;
-    }
-
-    public Vehicle(String vehicleNumber, VehicleType vehicleType) {
+    public Vehicle(String vehicleNumber, VehicleType vehicleType, Store store) {
         this.vehicleNumber = vehicleNumber;
         this.vehicleType = vehicleType;
+        this.store = store;
+        this.reservations = new CopyOnWriteArrayList<>();
+        this.lock = new StampedLock();
     }
 
     public String getVehicleNumber() {
@@ -27,40 +28,58 @@ public class Vehicle {
         return vehicleType;
     }
 
+    public Store getStore() {
+        return store;
+    }
 
-    public boolean searchVehicle(LocalDate startDate, LocalDate endDate, VehicleType vehicleType) {
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
 
-        if (this.vehicleType != vehicleType) return false;
+    public StampedLock getLock() {
+        return lock;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public int searchVehicle(LocalDate startDate, LocalDate endDate) {
 
         long start = startDate.toEpochDay();
         long end = endDate.toEpochDay();
 
-        for (Pair reservation : reservations) {
+        long prevEnd = -1;
+        int index = -1;
+        for (int i = 0; i < reservations.size(); i++) {
 
-            if (end < reservation.getStartDate() || start > reservation.getEndDate()) continue;
-            else return false;
+            long nextStart = reservations.get(i).getStartTime().toEpochDay();
+            if (prevEnd < start && end < nextStart) {
+                index = i;
+                break;
+            }
+            prevEnd = reservations.get(i).getEndTime().toEpochDay();
         }
 
-        return true;
-
+        if (index == -1 && prevEnd < start) index = reservations.size();
+        return index;
     }
-
-    public void reserveVehicle(LocalDate startDate, LocalDate endDate) {
-        reservations.add(new Pair(startDate.toEpochDay(), endDate.toEpochDay()));
-    }
-
 
     public boolean searchForReservation(LocalDate startDate, LocalDate endDate) {
         long stamp = lock.tryOptimisticRead();
-        if (!searchVehicle(startDate, endDate, getVehicleType())) return false;
+        if (searchVehicle(startDate, endDate) == -1) return false;
         return lock.validate(stamp);
     }
 
-    public void removeCompletedBooking(LocalDate startDate, LocalDate endDate){
-        long stamp = lock.writeLock();
-        reservations.remove(new Pair(startDate.toEpochDay(), endDate.toEpochDay()));
-        lock.unlockWrite(stamp);
+    public void reserveVehicle(int index, LocalDate startDate, LocalDate endDate) {
+        reservations.add(index, new Reservation(startDate, endDate));
     }
 
-
+    @Override
+    public String toString() {
+        return "Vehicle{" +
+                "vehicleNumber='" + vehicleNumber + '\'' +
+                ", vehicleType=" + vehicleType +
+                '}';
+    }
 }

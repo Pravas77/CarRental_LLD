@@ -1,12 +1,12 @@
 public class RazorparPaymentStrategy implements PaymentStrategy {
     @Override
-    public PaymentStatus pay(int cost) {
+    public boolean pay(int cost) {
 
         try {
-            Thread.sleep(2000);
-            return PaymentStatus.SUCCEED;
+            Thread.sleep(500);
+            return true;
         } catch (Exception e) {
-            return PaymentStatus.FAILED;
+            return false;
         }
     }
 }

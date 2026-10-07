@@ -1,12 +1,10 @@
 public enum VehicleType {
-    Economy(500,50),Luxury(1000,100),SEDEN(800,80),SUV(600,60);
+    Economy(500), Luxury(1000);
 
     private int dailyPrice;
-    private int hourlyPrice;
 
-    private VehicleType(int dailyPrice, int hourlyPrice) {
+    private VehicleType(int dailyPrice) {
         this.dailyPrice = dailyPrice;
-        this.hourlyPrice = hourlyPrice;
     }
 
     public int getDailyPrice() {
@@ -15,13 +13,5 @@ public enum VehicleType {
 
     public void setDailyPrice(int dailyPrice) {
         this.dailyPrice = dailyPrice;
-    }
-
-    public int getHourlyPrice() {
-        return hourlyPrice;
-    }
-
-    public void setHourlyPrice(int hourlyPrice) {
-        this.hourlyPrice = hourlyPrice;
     }
 }

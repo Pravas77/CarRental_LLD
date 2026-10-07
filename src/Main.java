@@ -7,18 +7,16 @@ public class Main {
 
         System.out.println("Hello");
 
-        Vehicle vehicle1 = new Vehicle("BR-1",VehicleType.Economy);
-        Vehicle vehicle2 = new Vehicle("BR-2",VehicleType.Luxury);
-        Vehicle vehicle3 = new Vehicle("BR-3",VehicleType.Economy);
-        Vehicle vehicle4 = new Vehicle("BR-4",VehicleType.Luxury);
-        Vehicle vehicle5 = new Vehicle("BR-5",VehicleType.Economy);
+        Vehicle vehicle1 = new Vehicle("EC-1", VehicleType.Economy, null);
+        Vehicle vehicle2 = new Vehicle("LUX-1", VehicleType.Luxury, null);
 
-        Strore strore1 = new Strore(1, List.of(vehicle1,vehicle2,vehicle3));
-        Strore strore2 = new Strore(2, List.of(vehicle4,vehicle5));
+        Store store1 = new Store(1,List.of(vehicle1,vehicle2));
+        vehicle1.setStore(store1);
+        vehicle2.setStore(store1);
 
-        StoreManager storeManager = new StoreManager(Map.of(
-                City.DELHI,List.of(strore1,strore2)
-        ));
+        StoreManager storeManager = new StoreManager(
+                Map.of(City.DELHI,List.of(store1))
+        );
 
         BookingManager bookingManager = new BookingManager(new DailyCostComputationStrategy());
 
@@ -28,42 +26,35 @@ public class Main {
         CarRentalSystem carRentalSystem = new CarRentalSystem(storeManager,bookingManager,List.of(user1,user2));
 
 
-        //client
-        List<Strore> strores = carRentalSystem.searchStores(City.DELHI);
-        for (Strore strore : strores) System.out.println(strore.getId());
-
-        List<Vehicle> vehicles = carRentalSystem.searchVehicles(LocalDate.of(2026,12,5),LocalDate.of(2026,12,7),VehicleType.Economy,strores.get(0));
-        for (Vehicle vehicle : vehicles) System.out.println(vehicle.getVehicleNumber());
-
+        System.out.println(carRentalSystem.searchVehicles(City.DELHI,VehicleType.Economy));
+        System.out.println(carRentalSystem.searchVehicles(City.MUMBAI,VehicleType.Economy));
+        System.out.println(carRentalSystem.searchVehicles(City.DELHI,VehicleType.Luxury));
 
         Thread thread1 = new Thread(() -> {
-            Booking booking1 = carRentalSystem.bookVehicle(
-                    user1,
-                    strores.get(0),
-                    vehicles.get(0),
-                    LocalDate.of(2026,12,5),
-                    LocalDate.of(2026,12,7),
-                    new RazorparPaymentStrategy());
 
-            System.out.println("User id " + booking1.getUser().getId() +" booked vehicle " + booking1.getVehicle().getVehicleNumber());
+            System.out.println(carRentalSystem.bookVehicle(
+                    user1,
+                    vehicle1,
+                    LocalDate.of(2027,1,1),
+                    LocalDate.of(2027,1,3),
+                    new RazorparPaymentStrategy() ));
+
         });
 
         Thread thread2 = new Thread(() -> {
-            Booking booking2 = carRentalSystem.bookVehicle(
-                    user2,
-                    strores.get(0),
-                    vehicles.get(0),
-                    LocalDate.of(2026,12,8),
-                    LocalDate.of(2026,12,11),
-                    new RazorparPaymentStrategy());
 
-            System.out.println("User id " + booking2.getUser().getId() +" booked vehicle " + booking2.getVehicle().getVehicleNumber());
+            System.out.println(carRentalSystem.bookVehicle(
+                    user2,
+                    vehicle1,
+                    LocalDate.of(2027,1,2),
+                    LocalDate.of(2027,1,4),
+                    new RazorparPaymentStrategy() ));
+
         });
 
         thread1.start();
-//        Thread.sleep(20);
+//        Thread.sleep(100);
         thread2.start();
-
 
     }
 }

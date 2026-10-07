@@ -1,19 +1,22 @@
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class StoreManager {
-    private Map<City, List<Strore>> storeFactory;
+    private Map<City, List<Store>> storesMap;
 
-    public StoreManager(Map<City, List<Strore>> storeFactory) {
-        this.storeFactory = storeFactory;
+    public StoreManager(Map<City, List<Store>> storesMap) {
+        this.storesMap = storesMap;
     }
 
-    public List<Strore> searchStores(City city){
-        return storeFactory.getOrDefault(city,List.of());
-    }
+    public List<Vehicle> searchVehicles(City city, VehicleType vehicleType) {
 
-    public List<Vehicle> searchVehicles(LocalDate startDate, LocalDate endDate, VehicleType vehicleType,Strore strore) {
-        return strore.searchVehicles(startDate, endDate, vehicleType);
+        List<Store> stores = storesMap.getOrDefault(city, new ArrayList<>());
+        List<Vehicle> vehicles = new ArrayList<>();
+        for (Store store : stores) {
+            vehicles.addAll(store.searchVehicles(vehicleType));
+        }
+        return vehicles;
     }
 }
